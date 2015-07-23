@@ -1,15 +1,18 @@
 package gui;
 
 import coneccion.MySQL;
-import java.awt.event.ItemEvent;
+import java.awt.Component;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import libreria.SeleccionRenderer;
 import org.jdesktop.swingx.prompt.PromptSupport;
@@ -19,7 +22,7 @@ public class inventarioGUI extends javax.swing.JInternalFrame {
     String sql_query = "SELECT * FROM v_productos ";
     String sql_count = "SELECT COUNT(*) as count FROM v_productos ";
     String most_res, where;
-    int paginas, pagina_actual;
+    int paginas, pagina_actual, count;
 
     public inventarioGUI() {
         initComponents();
@@ -28,7 +31,6 @@ public class inventarioGUI extends javax.swing.JInternalFrame {
         setRendererCombos();
         cabecera_tooltip();
         actualizar_inventario();
-
     }
 
     @SuppressWarnings("unchecked")
@@ -72,7 +74,7 @@ public class inventarioGUI extends javax.swing.JInternalFrame {
         jLabel19 = new javax.swing.JLabel();
         cboModOrder = new javax.swing.JComboBox();
         jLabel2 = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
+        jscrInventario = new javax.swing.JScrollPane();
         tblInventario = new javax.swing.JTable();
         jLabel4 = new javax.swing.JLabel();
         cbo_most_res = new javax.swing.JComboBox();
@@ -83,6 +85,7 @@ public class inventarioGUI extends javax.swing.JInternalFrame {
         btnFirst = new javax.swing.JButton();
         lblPages = new javax.swing.JLabel();
         btnLast = new javax.swing.JButton();
+        lblMostrando = new javax.swing.JLabel();
 
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
@@ -256,10 +259,20 @@ public class inventarioGUI extends javax.swing.JInternalFrame {
         jLabel18.setText("Ordenar por ");
 
         cboOrderBy.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Producto", "Presentación", "Unidad de medida", "Precio de venta", "Precio de compra unitario", "Precio de compra total", "Stock unitario", "Stock total" }));
+        cboOrderBy.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                cboOrderByItemStateChanged(evt);
+            }
+        });
 
         jLabel19.setText("de manera");
 
         cboModOrder.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Descendente", "Ascendente" }));
+        cboModOrder.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                cboModOrderItemStateChanged(evt);
+            }
+        });
 
         javax.swing.GroupLayout cmp_filtroLayout = new javax.swing.GroupLayout(cmp_filtro);
         cmp_filtro.setLayout(cmp_filtroLayout);
@@ -372,60 +385,57 @@ public class inventarioGUI extends javax.swing.JInternalFrame {
                     .addComponent(jLabel13))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(cmp_filtroLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(cmp_filtroLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(txt_prec_tot_pro_min, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel12)
+                        .addComponent(txt_prec_tot_pro_max, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel14))
+                    .addGroup(cmp_filtroLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(txt_stock_uni_pro_min, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel6)
+                        .addComponent(txt_stock_uni_pro_max, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel11)
+                        .addComponent(jLabel7)))
+                .addGroup(cmp_filtroLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(cmp_filtroLayout.createSequentialGroup()
-                        .addComponent(jLabel7)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel15))
+                        .addGroup(cmp_filtroLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(txt_stock_tot_pro_min, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel16)
+                            .addComponent(txt_stock_tot_pro_max, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel15)))
                     .addGroup(cmp_filtroLayout.createSequentialGroup()
+                        .addGap(3, 3, 3)
                         .addGroup(cmp_filtroLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(cmp_filtroLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(txt_prec_tot_pro_min, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jLabel12)
-                                .addComponent(txt_prec_tot_pro_max, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jLabel14))
+                                .addComponent(jLabel19)
+                                .addComponent(cboModOrder, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(cmp_filtroLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(txt_stock_uni_pro_min, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jLabel6)
-                                .addComponent(txt_stock_uni_pro_max, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jLabel11)))
-                        .addGroup(cmp_filtroLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(cmp_filtroLayout.createSequentialGroup()
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(cmp_filtroLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(txt_stock_tot_pro_min, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jLabel16)
-                                    .addComponent(txt_stock_tot_pro_max, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addGroup(cmp_filtroLayout.createSequentialGroup()
-                                .addGap(3, 3, 3)
-                                .addGroup(cmp_filtroLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(cmp_filtroLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(jLabel19)
-                                        .addComponent(cboModOrder, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addGroup(cmp_filtroLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(jLabel18)
-                                        .addComponent(cboOrderBy, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))))
+                                .addComponent(jLabel18)
+                                .addComponent(cboOrderBy, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jLabel2.setText("Resultado de búsqueda: ");
 
+        tblInventario.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
         tblInventario.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
             new String [] {
-                "PROD.", "SERIE", "PRES.", "U.  M.", "P. V.", "P. C. U.", "P. C. T.", "S. U.", "S. T."
+                "N°", "PROD.", "SERIE", "PRES.", "U.  M.", "P. V.", "P. C. U.", "P. C. T.", "S. U.", "S. T."
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit [columnIndex];
             }
         });
-        jScrollPane1.setViewportView(tblInventario);
+        jscrInventario.setViewportView(tblInventario);
 
         jLabel4.setText("Mostrar");
 
@@ -472,43 +482,49 @@ public class inventarioGUI extends javax.swing.JInternalFrame {
             }
         });
 
+        lblMostrando.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        lblMostrando.setText("Mostrando 10 de 30 registros");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1)
                     .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel1)
+                            .addComponent(jscrInventario)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel2)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel4)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(cbo_most_res, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel5))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(cmp_filtro, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel17, javax.swing.GroupLayout.PREFERRED_SIZE, 153, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel1)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(jLabel2)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(jLabel4)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(cbo_most_res, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(jLabel5))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(cmp_filtro, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(jLabel17, javax.swing.GroupLayout.PREFERRED_SIZE, 153, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addGap(0, 0, Short.MAX_VALUE))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(207, 207, 207)
+                        .addComponent(btnFirst)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnPrevious)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(lblPages)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(btnNext)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnLast)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(lblMostrando, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addGap(207, 207, 207)
-                .addComponent(btnFirst)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnPrevious)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(lblPages)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(btnNext)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnLast)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -526,15 +542,16 @@ public class inventarioGUI extends javax.swing.JInternalFrame {
                     .addComponent(cbo_most_res, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel5))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 212, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jscrInventario, javax.swing.GroupLayout.PREFERRED_SIZE, 212, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnPrevious)
                     .addComponent(btnNext)
                     .addComponent(btnFirst)
                     .addComponent(lblPages)
-                    .addComponent(btnLast))
-                .addContainerGap(25, Short.MAX_VALUE))
+                    .addComponent(btnLast)
+                    .addComponent(lblMostrando))
+                .addContainerGap(36, Short.MAX_VALUE))
         );
 
         pack();
@@ -701,6 +718,14 @@ public class inventarioGUI extends javax.swing.JInternalFrame {
 
     }//GEN-LAST:event_btnLastActionPerformed
 
+    private void cboOrderByItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cboOrderByItemStateChanged
+        actualizar_inventario();
+    }//GEN-LAST:event_cboOrderByItemStateChanged
+
+    private void cboModOrderItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cboModOrderItemStateChanged
+        actualizar_inventario();
+    }//GEN-LAST:event_cboModOrderItemStateChanged
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnFirst;
@@ -737,7 +762,8 @@ public class inventarioGUI extends javax.swing.JInternalFrame {
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JMenu jMenu1;
-    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jscrInventario;
+    private javax.swing.JLabel lblMostrando;
     private javax.swing.JLabel lblPages;
     private javax.swing.JTable tblInventario;
     private javax.swing.JTextField txt_busq_pro;
@@ -801,17 +827,41 @@ public class inventarioGUI extends javax.swing.JInternalFrame {
         String prec_tot_max = txt_prec_tot_pro_max.getText();
         most_res = cbo_most_res.getSelectedItem().toString();
         String orderby = "";
-        /*switch (cboOrderBy.getSelectedItem().toString()) {
-            case "":
-                ;
+        String ordermod = "";
+        switch (cboOrderBy.getSelectedItem().toString()) {
+            case "Producto":
+                orderby = "nomb_pro";
                 break;
-            case valor2:
-                ;
-                break
-            default:
-                sentencias;
+            case "Presentación":
+                orderby = "pres_pro";
                 break;
-        }*/
+            case "Unidad de medida":
+                orderby = "unme_pro";
+                break;
+            case "Precio de venta":
+                orderby = "prev_pro";
+                break;
+            case "Precio de compra unitario":
+                orderby = "prcu_pro";
+                break;
+            case "Precio de compra total":
+                orderby = "prct_pro";
+                break;
+            case "Stock unitario":
+                orderby = "stun_pro";
+                break;
+            case "Stock total":
+                orderby = "stto_pro";
+                break;
+        }
+        switch (cboModOrder.getSelectedItem().toString()) {
+            case "Descendente":
+                ordermod = "desc";
+                break;
+            case "Ascendente":
+                ordermod = "asc";
+                break;
+        }
 
         // Consultas
         sql_query = "SELECT * FROM v_productos ";
@@ -868,9 +918,9 @@ public class inventarioGUI extends javax.swing.JInternalFrame {
         if (!prec_tot_max.equals("")) {
             where += "AND prct_pro <= " + prec_tot_max + " ";
         }
+        // Ordenación
+        where += "ORDER BY " + orderby + " " + ordermod + " ";
 
-        // Mostrar X resultados
-        //sql += "LIMIT " + most_res;
         try {
             Connection Conexion = MySQL.getInstance().getConnection();
 
@@ -878,7 +928,7 @@ public class inventarioGUI extends javax.swing.JInternalFrame {
             ResultSet rsCount = ps_count.executeQuery();
 
             rsCount.first();
-            int count = rsCount.getInt(12);
+            count = rsCount.getInt(12);
 
             paginas = ((int) count / Integer.parseInt(most_res)) + 1;
 
@@ -894,8 +944,10 @@ public class inventarioGUI extends javax.swing.JInternalFrame {
                 odm.removeRow(0);
             }
             rs.first();
+            int nro = 1;
             do {
                 Object[] registro = {
+                    nro,
                     rs.getString(2),
                     rs.getString(10),
                     rs.getString(3),
@@ -907,10 +959,30 @@ public class inventarioGUI extends javax.swing.JInternalFrame {
                     rs.getString(7)
                 };
                 odm.addRow(registro);
+                nro++;
             } while (rs.next());
-
+            update_mostrando();
         } catch (Exception e) {
             System.out.println(e.getMessage());
+        }
+        tblInventario.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+
+        for (int column = 0; column < tblInventario.getColumnCount(); column++) {
+            TableColumn tableColumn = tblInventario.getColumnModel().getColumn(column);
+            int preferredWidth = tableColumn.getMinWidth();
+            int maxWidth = tableColumn.getMaxWidth();
+
+            for (int row = 0; row < tblInventario.getRowCount(); row++) {
+                TableCellRenderer cellRenderer = tblInventario.getCellRenderer(row, column);
+                Component c = tblInventario.prepareRenderer(cellRenderer, row, column);
+                int width = c.getPreferredSize().width + tblInventario.getIntercellSpacing().width;
+                preferredWidth = Math.max(preferredWidth, width);
+                if (preferredWidth >= maxWidth) {
+                    preferredWidth = maxWidth;
+                    break;
+                }
+            }
+            tableColumn.setPreferredWidth(preferredWidth+30);
         }
     }
 
@@ -926,8 +998,10 @@ public class inventarioGUI extends javax.swing.JInternalFrame {
                 odm.removeRow(0);
             }
             rs.first();
+            int nro = skip + 1;
             do {
                 Object[] registro = {
+                    nro,
                     rs.getString(2),
                     rs.getString(10),
                     rs.getString(3),
@@ -939,10 +1013,31 @@ public class inventarioGUI extends javax.swing.JInternalFrame {
                     rs.getString(7)
                 };
                 odm.addRow(registro);
+                nro++;
             } while (rs.next());
             set_btn_pages();
+            update_mostrando();
         } catch (Exception e) {
             System.out.println(e.getMessage());
+        }
+        tblInventario.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+
+        for (int column = 0; column < tblInventario.getColumnCount(); column++) {
+            TableColumn tableColumn = tblInventario.getColumnModel().getColumn(column);
+            int preferredWidth = tableColumn.getMinWidth();
+            int maxWidth = tableColumn.getMaxWidth();
+
+            for (int row = 0; row < tblInventario.getRowCount(); row++) {
+                TableCellRenderer cellRenderer = tblInventario.getCellRenderer(row, column);
+                Component c = tblInventario.prepareRenderer(cellRenderer, row, column);
+                int width = c.getPreferredSize().width + tblInventario.getIntercellSpacing().width;
+                preferredWidth = Math.max(preferredWidth, width);
+                if (preferredWidth >= maxWidth) {
+                    preferredWidth = maxWidth;
+                    break;
+                }
+            }
+            tableColumn.setPreferredWidth(preferredWidth+30);
         }
     }
 
@@ -1005,6 +1100,10 @@ public class inventarioGUI extends javax.swing.JInternalFrame {
             btnLast.setEnabled(true);
             btnNext.setEnabled(true);
         }
+    }
+
+    private void update_mostrando() {
+        lblMostrando.setText("Mostrando " + tblInventario.getRowCount() + " de " + count + " registros.");
     }
 
     class ToolTipHeader extends JTableHeader {

@@ -85,7 +85,7 @@ public class menuGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_saveMenuItemActionPerformed
 
     private void openMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openMenuItemActionPerformed
-    desktopPane.add(new productoGUI());
+    desktopPane.add(new ProductoGUI());
     }//GEN-LAST:event_openMenuItemActionPerformed
 
     /**
