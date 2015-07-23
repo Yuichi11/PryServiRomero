@@ -8,7 +8,7 @@ import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import to.productoTO;
 
-public class productoGUI extends javax.swing.JInternalFrame {
+public class ProductoGUI extends javax.swing.JInternalFrame {
 
     DefaultTableModel objTabla_prod;
     productoDAO objProductoDAO;
@@ -16,7 +16,7 @@ public class productoGUI extends javax.swing.JInternalFrame {
     static DefaultListModel modelo = new DefaultListModel();
     boolean Button = false;
 
-    public productoGUI() {
+    public ProductoGUI() {
         initComponents();
         setVisible(true);
         setLocation(70, 50);
